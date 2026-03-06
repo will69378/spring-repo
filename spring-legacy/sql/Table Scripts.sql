@@ -140,10 +140,15 @@ CREATE TABLE CHAT_ROOM_JOIN (
     PRIMARY KEY(USER_NO, CHAT_ROOM_NO)
 );
 
-CREATE SEQUENCE SEQ_CR_NO;
-CREATE SEQUENCE SEQ_CM_NO;
+CREATE TABLE persistent_logins (
+    username        VARCHAR(64)  NOT NULL,
+    series          VARCHAR(64)  PRIMARY KEY,
+    token           VARCHAR(64)  NOT NULL,
+    last_used       TIMESTAMP    NOT NULL
+);
 
-
+CREATE INDEX idx_persistent_logins_username
+ON persistent_logins(username);
 
 
 

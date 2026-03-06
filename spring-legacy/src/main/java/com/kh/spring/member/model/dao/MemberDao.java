@@ -1,6 +1,7 @@
 package com.kh.spring.member.model.dao;
 
 import com.kh.spring.member.model.vo.Member;
+import com.kh.spring.security.model.vo.MemberExt;
 
 public interface MemberDao {
 
@@ -11,4 +12,8 @@ public interface MemberDao {
 	int idCheck(String userId);
 	
 	Member selectOne(String userId);
+
+	int updateMember(MemberExt loginUser);
+
+	void insertAuthority(Member m);
 }

@@ -221,7 +221,7 @@ public class MemberController {
 	 * 
 	 * return searchMember; }
 	 */
-	
+	                                            
 	@GetMapping("/selectOne")
 	public ResponseEntity<Member> selectOne(String userId) {
 		Member searchMember = mService.selectOne(userId);

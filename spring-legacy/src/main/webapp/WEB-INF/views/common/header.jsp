@@ -1,6 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="sec"
+	uri="http://www.springframework.org/security/tags"%>
 
 <!DOCTYPE html>
 <html>
@@ -175,30 +178,51 @@ div {
 				scope="application" />
 
 			<div id="header_1_right">
-				<c:choose>
-                    <c:when test="${empty loginUser}">
-                        <!-- 로그인전이라면 -->
-                        <a href="${contextPath }/member/insert">회원가입</a>
-                        <!-- 모달창 설정 : data-target에 정의해놓은 아이디의 dom요소를 띄워줌 -->
-                        <a href="${contextPath}/member/login">로그인</a>
-                    </c:when>
-                    <c:otherwise>
-                        <label>${loginUser.userName}님 환영합니다.</label> &nbsp;&nbsp;
-                        <a href="${contextPath }/member/myPage">마이페이지</a>
-                        <a href="${contextPath }/member/logout">로그아웃</a>
-                    </c:otherwise>
-                </c:choose>
+				
+				<!-- 로그인하지 않은 사용자가 보게될 화면 -->
+				<sec:authorize access="isAnonymous()">
+					<a href="${contextPath }/security/insert">회원가입</a>
+					<a href="${contextPath}/member/login">로그인</a> 
+				</sec:authorize>
+				
+				
+				<sec:authorize access="isAuthenticated">
+				<!-- 
+					authentication 내부의 데이터
+						1. principal : 사용자 정보가 담기는 영역
+						2. Authorities : 사용자의 권한이 담기는 영역
+						3. 크리덴셜 : 사용자의 암호화된 "비밀번호"가 담기는 영역
+				 -->
+				
+					<label><sec:authentication property="principal.userName" />
+					 님 환영합니다.</label> &nbsp;&nbsp;
+					<a href="${contextPath }/security/myPage">마이페이지</a>
+					<form:form method="post" action="${contextPath}/member/logout" style="display: inline;">
+						<button class="border-0 bg-transparent text-secondary p-0 ml-2">
+						로그아웃</button>
+					</form:form>
+				</sec:authorize>
+
+				
+
 
 			</div>
 		</div>
 		<div id="header_2">
 			<ul>
-				<li><a href="${contextPath }">HOME</a></li>
-                <li><a href="${contextPath }/chat/chatRoomList">채팅</a></li>
+			<!-- 권한별 URL 노출 설정 -->
+			<li><a href="${contextPath }">HOME</a></li>
+				<sec:authorize access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" >
+					
+					<li><a href="${contextPath }/chat/chatRoomList">채팅</a></li>
 
-                <c:forEach items='${boardTypeList}' var='boardType'>
-                    <li><a href="${contextPath }/board/list/${boardType.boardCd}">${boardType.boardName}</a></li>
-                </c:forEach>
+					<c:forEach items='${boardTypeMap}' var='boardType'>
+						<li><a href="${contextPath }/board/list/${boardType.key}">${boardType.value.boardName}</a></li>
+					</c:forEach>
+				</sec:authorize>
+				<sec:authorize access="hasRole('ROLE_ADMIN')">
+					<li><a>관리자페이지</a></li>
+				</sec:authorize>
 			</ul>
 		</div>
 	</div>
