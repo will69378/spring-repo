@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.spring.board.model.dao.BoardDao;
 import com.kh.spring.board.model.vo.Board;
+import com.kh.spring.board.model.vo.BoardExt;
 import com.kh.spring.board.model.vo.BoardImg;
 
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BoardServiceImpl implements BoardService{
-	
+public class BoardServiceImpl implements BoardService {
+
 	private final BoardDao boardDao;
-	
+
 	@Override
 	public Map<String, String> getBoardTypeMap() {
 		return boardDao.getBoardTypeMap();
@@ -36,53 +37,87 @@ public class BoardServiceImpl implements BoardService{
 	}
 
 	@Override
-	@Transactional(rollbackFor = {Exception.class})
+	@Transactional(rollbackFor = { Exception.class })
 	/*
-		@Transactional
-			- 선언적 트랜잭션 관리용 어노테이션
-			- Exception.class와 하위 예외가 발생하면 무조건 rollback 처리한다.
-			- rollbackFor를 지정하지 않으면 RuntimeException 에러가 발생한 경우만 
-			rollback한ㄷ.
-	
+	 * @Transactional - 선언적 트랜잭션 관리용 어노테이션 - Exception.class와 하위 예외가 발생하면 무조건
+	 * rollback 처리한다. - rollbackFor를 지정하지 않으면 RuntimeException 에러가 발생한 경우만
+	 * rollback한ㄷ.
+	 * 
 	 */
-	
+
 	public int insertBoard(Board b, List<BoardImg> imgList) {
 		/*
-			서비스 로직 
-				0. 게시글 데이터 전처리(개행문자 처리 및 xss핸들링)
-				1. board테이블에 데이터 insert
-				2. 첨부파일이 존재하는 경우 첨부파일 테이블에 insert
-				3. 1번, 2번 과정에서 실패가 발생하는 경우 rollback
+		 * 서비스 로직 0. 게시글 데이터 전처리(개행문자 처리 및 xss핸들링) 1. board테이블에 데이터 insert 2. 첨부파일이 존재하는
+		 * 경우 첨부파일 테이블에 insert 3. 1번, 2번 과정에서 실패가 발생하는 경우 rollback
 		 */
-		
+
 		// 1. 게시글 저장
-		// 		- 게시글 insert 후, boardNo값을 b 객체에 바인딩해줘야 한다.
+		// - 게시글 insert 후, boardNo값을 b 객체에 바인딩해줘야 한다.
 		int result = boardDao.insertBoard(b);
-		 
-		if(result == 0) {
+
+		if (result == 0) {
 			throw new RuntimeException("게시글 등록 실패");
 		}
-		
+
 		// 2. 첨부파일 데이터 insert
-		if(!imgList.isEmpty()) {
-			for(BoardImg bi : imgList) {
+		if (!imgList.isEmpty()) {
+			for (BoardImg bi : imgList) {
 				bi.setRefBno(b.getBoardNo());
-				
+
 //				//행단위 insert 수행
 //				result = boardDao.insertBoardImg(bi);
 //				
 //				if(result == 0) {
 //					throw new RuntimeException("첨부파일 등록 실패");
 //				}
-				
+
 			}
 			result = boardDao.insertBoardImgList(imgList);
-			
-			if(result != imgList.size()) {
+
+			if (result != imgList.size()) {
 				throw new RuntimeException("첨부파일 등록 에러 발생");
 			}
-			
+
 		}
+		return result;
+	}
+
+	@Override
+	public BoardExt selectBoard(int boardNo) {
+
+		return boardDao.selectBoard(boardNo);
+	}
+
+	@Override
+	public int increaseCount(int boardNo) {
+		return boardDao.increaseCount(boardNo);
+	}
+
+	@Override
+	@Transactional(rollbackFor = { Exception.class })
+	public int updateBoard(Board board, String deleteList, List<BoardImg> imgList) {
+		int result = boardDao.updateBoard(board);
+
+		if (result == 0)
+			throw new RuntimeException("게시글 수정 실패");
+		
+		if (deleteList != null && !deleteList.equals("")) {
+			result = boardDao.deleteBoardImg(deleteList);
+			
+			if(result == 0) throw new RuntimeException("첨부파일 삭제 에러");
+		}
+
+		
+		if (!imgList.isEmpty()) {
+			for (BoardImg bi : imgList) {
+				result = boardDao.insertBoardImg(bi);
+
+				if (result == 0) {
+					throw new RuntimeException("첨부파일 수정 실패");
+				}
+			}
+		}
+		
 		return result;
 	}
 
