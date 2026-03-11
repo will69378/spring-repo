@@ -4,7 +4,9 @@
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
@@ -28,6 +30,99 @@
 	<!-- @Transactional 어노테이션 활성화 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 	
+	<!-- 웹소켓 설정 시작 -->
+	<!-- 
+		Http / Https
+			- 클라이언트와 웹서버 간에 요청간 응답기반으로 동작하는 전통적인 통신 방식
+			- 클라이언트의 요청이 있어야만 응답이 발생하는 "단방향" 통신 구조
+			- 연결을 "유지하지 않고" 매 요청시마다 새로운 연결을 생성하는 방식을 사용한다.
+			- 실시간 처리기능을 개발하기에 적합하지 않음
+			- 단, 구현방식이 단순하고 범용적으로 많이 사용된다.	
+		
+		WebSocket
+			- 클라이언트와 서버 간의 지속적인 연결을 유지하며, 양방향 통신을 지원하는 프로토콜
+				* 양방향 통신 : 양쪽 장치가 동시에 송 / 수신을 독립적으로 할 수 있는
+				통신 방식 (ex : 전화기)
+			- 서버와 클라이언트가 서로 "실시간"으로 데이터를 주고 받을 수 있고,
+			 이 때문에 실시간 서비스 개발에 사용할 수 있다.
+			- 일반 http 개발보다 구현이 복잡하고, 연결 클라이언트 수 유지에 따른 리소스 관리가 필요
+		
+		WebSocket 사용을 위한 스펙
+			- HTML은 HTML5부터 웹소켓을 지원
+			- Java에서는 Java7부터 지원	* 현재 : 11
+			- Spring framework는 4.0 이상부터 지원	* 현재 : 5.1
+			- Spring 모듈 : spring-websocket, spring-messaging	
+		
+		
+		WebSocket의 동작방식
+			- 첫 연결 요청은 http 프로토콜을 사용하고, 연결 성공시 통신방식을
+			WebSocket 통신으로 전환한다. (ws : )
+			- 연결되고 나서부터는 "데이터프레임"을 주고 받는다.
+			
+		
+		SockJS
+			- WebSocket을 지원하지 않는 환경에서도 WebSocket처럼 동작하게 
+			해주는 자바스크립트 라이브러리.
+			- WebSocket을 사용할 수 없는 경우 xhr 스트리밍, polling 방식을 통해 
+			유사한 기능을 제공.
+			- WebSocket / sockjs는 메세지를 실시간으로 송수신 하기 위한 양방향 채널이며
+			특별한 기능적인 규약은 존재하지 않는다.	
+	 -->
+	
+	<beans:bean id="chatHandler" 
+	class="com.kh.spring.chat.model.websocket.ChatWebsocket" />
+	
+	<websocket:handlers>
+		<!-- 웹소켓 요청을 처리할 수 있는 bean 객체 등록 -->
+		<websocket:mapping handler="chatHandler" path="/chat" />
+		
+		<!-- 
+			첫 웹소켓 연결 요청시 전달되는 HttpSession 정보를 WebSocketSession으로
+			복사해주는 인터셉터
+		 -->
+		<websocket:handshake-interceptors>
+			<beans:bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor">
+				
+			</beans:bean>
+		</websocket:handshake-interceptors>
+		
+		<websocket:sockjs></websocket:sockjs>
+		
+	</websocket:handlers>
+	
+	<!-- 웹소켓 설정 끝 -->
+	
+	
+	<!--
+		 STOMP
+	 		- WebSocket 위에서 동작하는 메시징 프로토콜로 
+	 		웹소켓을 활용한 복잡한 기능을 구현할때 사용한다.
+	 		- 메시지의 "목적지" , "구독", "명령", "헤더", "바디" 
+	 		등을 추가하여 의미있는 통신을 가능하게 한다.
+	 		
+	 	STOMP - endpoint
+	 		- STOMP 서버의 연결통로
+	 	
+	 	application-destination-prefix
+	 		- 클라이언트가 "서버"러 보낼 메시지의 시작 url을 지정하는 속성
+	 		
+	 	simple-broker
+	 		- 클라이언트가 메시지를 받을 구독 경로	
+	 -->
+	
+	<websocket:message-broker application-destination-prefix="/app">
+		<websocket:stomp-endpoint path="/stomp">
+			<websocket:sockjs>
+				
+			</websocket:sockjs>	
+		</websocket:stomp-endpoint>
+		
+		<websocket:simple-broker prefix="/topic"/>
+		
+		
+		
+	</websocket:message-broker>
+		
 	
 	
 </beans:beans>
