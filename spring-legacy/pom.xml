@@ -36,12 +36,7 @@
 			<version>${org.springframework-version}</version>
 		</dependency>
 
-		<!-- AspectJ -->
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
-			<version>${org.aspectj-version}</version>
-		</dependency>
+
 
 		<!-- Logging -->
 		<dependency>
@@ -268,6 +263,23 @@
 			<scope>compile</scope>
 		</dependency>
 		<!-- 웹소켓 (실시간 통신) 의존성 끝 -->
+		
+		
+		<!-- AOP 의존성 -->
+		<!-- AspectJ -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${org.aspectj-version}</version>
+		</dependency>
+
+		<!-- Source: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${org.aspectj-version}</version>
+			<scope>runtime</scope>
+		</dependency>
 
 	</dependencies>
 

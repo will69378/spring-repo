@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.kh.spring.board.model.vo.Board;
 import com.kh.spring.board.model.vo.BoardExt;
 import com.kh.spring.board.model.vo.BoardImg;
+import com.kh.spring.board.model.vo.BoardType;
 import com.kh.spring.common.model.vo.PageInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -134,6 +135,16 @@ public class BoardDaoImpl implements BoardDao{
 		
 		// ,로 구분되어서 최대까지 4개까지  전달됨 ex) 1,2,3
 		return session.delete("board.deleteBoardImg", deleteList);
+	}
+
+	@Override
+	public List<String> selectFileList() {
+		return session.selectList("board.selectFileList");
+	}
+
+	@Override
+	public List<BoardType> selectBoardTypeMap() {
+		return session.selectList("board.selectBoardTypeMap");
 	}
 
 }
