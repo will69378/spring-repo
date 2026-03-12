@@ -43,7 +43,7 @@ public class FileDeleteTask {
 	private final ServletContext application;
 	
 	//@Scheduled( cron="0 0 4 1 * *")
-	@Scheduled( cron="1/1 * * * * *")
+	//@Scheduled( cron="1/1 * * * * *") 
 	public void deleteFile() {
 		
 		// 1. DB에서 데이터 조회
